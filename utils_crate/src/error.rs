@@ -58,6 +58,9 @@ pub enum UtilsError {
 #[cfg(all(feature = "serde", feature = "serde_json"))]
 impl From<serde_json::Error> for UtilsError {
     fn from(err: serde_json::Error) -> Self {
+        // serde_json::Error может возникать как при сериализации, так и при десериализации.
+        // Мы не можем точно знать контекст здесь, но Deserialization более частый случай для from_str/from_reader.
+        // Если ошибка возникла при сериализации, лучше использовать .map_err(|e| UtilsError::Serialization(...))
         UtilsError::Deserialization(format!("JSON error: {}", err))
     }
 }

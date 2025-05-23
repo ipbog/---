@@ -23,10 +23,10 @@ tokio = { workspace = true, features = ["sync"], optional = true } # Для mpsc
 
 # Специфичные зависимости для утилитарных модулей
 # Добавлены для logger.rs
-tracing-appender = { version = "0.2", optional = true } # Для ротации логов
+tracing-appender = { version = "0.2.3", optional = true } # ИЗМЕНЕНО: Для ротации логов
 
 # Добавлены для config.rs
-toml = { version = "0.8.22", optional = true } # ИЗМЕНЕНО: Для загрузки TOML конфигов
+toml = { version = "0.8.22", optional = true } # Для загрузки TOML конфигов
 
 [features]
 default = [

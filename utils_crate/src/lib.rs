@@ -8,7 +8,7 @@
 )]
 #![deny(unsafe_code, unused_mut, unused_imports, unused_attributes)]
 
-//! `utils_crate` предоставляет общие структуры данных, обработку ошибок и общие утилиты
+//! utils_crate предоставляет общие структуры данных, обработку ошибок и общие утилиты
 //! для проекта AI Code Assistant.
 
 // --- Модуль для общих ошибок ---
@@ -28,9 +28,9 @@ pub use inference_task::{
 // --- Ваши утилитарные модули (управляются фичами) ---
 
 #[cfg(feature = "path_utils_feature")]
-pub mod path; // Имя модуля соответствует имени файла src/path.rs
+pub mod path_utils; // ИЗМЕНЕНО: Имя модуля соответствует имени файла src/path_utils.rs
 #[cfg(feature = "path_utils_feature")]
-pub use path::{ensure_dir_exists, find_file_in_dir, sanitize_path_component};
+pub use path_utils::{ensure_dir_exists, find_file_in_dir, sanitize_path_component};
 
 #[cfg(feature = "logger_utils_feature")]
 pub mod logger;

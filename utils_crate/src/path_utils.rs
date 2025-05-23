@@ -61,7 +61,7 @@ pub fn find_file_in_dir(dir: &Path, file_name: &str) -> Result<Option<PathBuf>, 
     for entry in fs::read_dir(dir)
         .map_err(|e| UtilsError::io_with_path(e, dir.to_string_lossy().into_owned()))?
     {
-        let entry = entry.map_err(|e| UtilsError::io_with_path(e, ".".into()))?;
+        let entry = entry.map_err(|e| UtilsError::io_with_path(e, ".".into()))?; // "." как плейсхолдер, т.к. конкретный путь entry еще не известен
         let path = entry.path();
         if path.is_file() && path.file_name().map_or(false, |name| name == file_name) {
             info!("Found file: {:?}", path);
@@ -74,6 +74,7 @@ pub fn find_file_in_dir(dir: &Path, file_name: &str) -> Result<Option<PathBuf>, 
 
 /// Очищает строку, чтобы ее можно было безопасно использовать как компонент пути.
 /// Заменяет потенциально проблемные символы на подчеркивания (`_`).
+/// Разрешенные символы: `a-z`, `A-Z`, `0-9`, `-`, `.`, `_`.
 ///
 /// # Arguments
 /// * `component` - Строка для очистки.

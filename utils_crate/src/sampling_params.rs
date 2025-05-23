@@ -12,7 +12,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[cfg(feature = "serde_json")]
+#[cfg(all(feature = "inference_types_serde", feature = "serde_json"))]
 use serde_json::Value as JsonValue;
 
 /// Ограничение для управления генерацией токенов.
@@ -27,7 +27,7 @@ pub enum GenerationConstraint {
     /// Ограничить генерацию на следование грамматике Lark.
     Lark(String),
     /// Ограничить генерацию на создание валидного JSON согласно схеме.
-    #[cfg(feature = "serde_json")]
+    #[cfg(all(feature = "inference_types_serde", feature = "serde_json"))]
     JsonSchema(JsonValue),
 }
 
@@ -63,16 +63,16 @@ pub struct SamplingParams {
     /// Диапазон: [0, бесконечность). По умолчанию: 50 (отключено, если 0).
     pub top_k: Option<usize>,
     /// Минимальная вероятность для рассмотрения токена.
-    /// Диапазон: [0.0, 1.0]. По умолчанию: None.
+    /// Диапазон: [0.0, 1.0]. По умолчанию: `None`.
     pub min_p: Option<f64>,
     /// Штраф за повторение токенов. Более высокие значения препятствуют повторению.
     /// По умолчанию: 1.1 (небольшой штраф).
     pub repeat_penalty: Option<f32>,
     /// Штраф за токены, которые уже появлялись.
-    /// По умолчанию: None (нет штрафа за присутствие).
+    /// По умолчанию: `None` (нет штрафа за присутствие).
     pub presence_penalty: Option<f32>,
     /// Явное смещение для логитов определенных токенов. Отображает ID токена на значение смещения.
-    /// По умолчанию: None.
+    /// По умолчанию: `None`.
     pub logits_bias: Option<HashMap<u32, f32>>,
     /// Количество возвращаемых верхних лог-вероятностей.
     /// По умолчанию: 0 (лог-вероятности не возвращаются).
@@ -107,11 +107,11 @@ impl SamplingParams {
     /// Возвращает параметры сэмплирования, настроенные для детерминированной (жадной) генерации.
     pub fn deterministic() -> Self {
         Self {
-            temperature: Some(0.0),
-            top_k: Some(1),
-            top_p: None,
-            min_p: None,
-            ..Default::default()
+            temperature: Some(0.0), // Ключевой параметр для жадной генерации
+            top_k: Some(1),         // Рассматривать только самый вероятный токен
+            top_p: None,            // Отключить top_p
+            min_p: None,            // Отключить min_p
+            ..Default::default()    // Остальные параметры по умолчанию
         }
     }
 }

@@ -72,29 +72,31 @@ pub fn init_tracing_logger(
 
     #[cfg(feature = "logger_utils_feature")]
     if let Some(dir) = log_dir {
-        if let Err(e) = fs::create_dir_all(dir) {
-            // Логируем предупреждение через стандартный `eprintln`,
-            // так как глобальный логгер еще не инициализирован.
-            eprintln!(
-                "[WARN] Failed to create log directory {:?}: {}. File logging disabled.",
-                dir, e
-            );
-        } else {
-            let file_appender = tracing_appender::rolling::daily(dir, format!("{}.log", app_name));
-
-            // Фильтр для файла: общий env_filter + уровень для текущего приложения
-            let file_filter = base_env_filter.add_directive(
-                format!("{}={}", app_name.replace('-', "_"), file_level)
-                    .parse()
-                    .expect("Invalid file log level directive"),
-            );
-
-            let file_layer = fmt::layer()
-                .with_writer(file_appender)
-                .with_ansi(false) // Обычно ANSI не нужен для файлов
-                .with_filter(file_filter);
-            layers.push(file_layer.boxed()); // Box layer
+        if !dir.exists() {
+            if let Err(e) = fs::create_dir_all(dir) {
+                eprintln!(
+                    "[WARN] Failed to create log directory {:?}: {}. File logging disabled.",
+                    dir, e
+                );
+            }
         }
+        // Продолжаем, даже если создание директории не удалось,
+        // tracing_appender может обработать это или запаниковать, что тоже ок на старте.
+        let file_appender = tracing_appender::rolling::daily(dir, format!("{}.log", app_name));
+
+        // Фильтр для файла: общий env_filter + уровень для текущего приложения
+        let file_filter = base_env_filter.add_directive(
+            format!("{}={}", app_name.replace('-', "_"), file_level)
+                .parse()
+                .expect("Invalid file log level directive"),
+        );
+
+        let file_layer = fmt::layer()
+            .with_writer(file_appender)
+            .with_ansi(false) // Обычно ANSI не нужен для файлов
+            .with_json(false) // Используем текстовый формат по умолчанию для файлов
+            .with_filter(file_filter);
+        layers.push(file_layer.boxed()); // Box layer
     }
 
     tracing_subscriber::registry()
@@ -106,7 +108,7 @@ pub fn init_tracing_logger(
     if log_dir.is_some() && cfg!(feature = "logger_utils_feature") {
         tracing::info!(
             "Logger initialized with console and file output to directory: {:?}",
-            log_dir.unwrap() // Безопасно, так как log_dir.is_some()
+            log_dir.unwrap_or_else(|| Path::new("")) // Безопасно, так как log_dir.is_some()
         );
     } else {
         tracing::info!("Logger initialized with console output only.");

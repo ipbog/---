@@ -179,3 +179,32 @@ impl InferenceTask {
         }
     }
 }
+
+// Если фича with_tokio_sender не включена, нам все еще нужен конструктор,
+// но без response_sender.
+#[cfg(not(feature = "with_tokio_sender"))]
+impl InferenceTask {
+    /// Создает новый экземпляр `InferenceTask` (без `response_sender`).
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        id: String,
+        input: TaskInput,
+        sampling_params: SamplingParams,
+        max_new_tokens: usize,
+        stop_sequences: Option<Vec<String>>,
+        stream_response: bool,
+        return_logprobs: bool,
+        // response_sender отсутствует
+    ) -> Self {
+        Self {
+            id,
+            input,
+            sampling_params,
+            max_new_tokens,
+            stop_sequences,
+            stream_response,
+            return_logprobs,
+            // response_sender отсутствует
+        }
+    }
+}

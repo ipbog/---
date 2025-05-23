@@ -67,7 +67,7 @@ impl Default for AppConfig {
     }
 }
 
-/// Конфигурация, связанная с моделями (под-конфигурация для `AppConfig`).
+/// Конфигурация, связанная с моделями (под-конфигурация для AppConfig).
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "app_config_serde", derive(Deserialize))]
 pub struct ModelConfigSub {
@@ -101,7 +101,7 @@ impl Default for ModelConfigSub {
     }
 }
 
-/// Конфигурация API сервера (под-конфигурация для `AppConfig`).
+/// Конфигурация API сервера (под-конфигурация для AppConfig).
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "app_config_serde", derive(Deserialize))]
 pub struct ApiConfigSub {
@@ -139,7 +139,7 @@ impl Default for ApiConfigSub {
     }
 }
 
-/// Специфичная конфигурация логирования (под-конфигурация для `AppConfig`).
+/// Специфичная конфигурация логирования (под-конфигурация для AppConfig).
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "app_config_serde", derive(Deserialize))]
 pub struct LoggingConfigSub {
@@ -173,7 +173,7 @@ impl Default for LoggingConfigSub {
     }
 }
 
-/// Общие настройки приложения (под-конфигурация для `AppConfig`).
+/// Общие настройки приложения (под-конфигурация для AppConfig).
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "app_config_serde", derive(Deserialize))]
 pub struct GeneralSettingsSub {
