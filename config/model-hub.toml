@@ -1,0 +1,45 @@
+# config/model-hub.toml
+
+# Путь к директории, где хранятся локально загруженные модели
+# (InferenceRunner или LspServerBackend будут использовать это значение по умолчанию)
+default_models_dir = ".model_cache" # Относительно корня проекта или домашней директории пользователя
+
+# Настройки логирования по умолчанию (могут быть переопределены переменными окружения)
+[logging]
+level = "info" # Возможные значения: "trace", "debug", "info", "warn", "error"
+# file = "model-hub.log" # Опционально, путь к файлу логов
+
+# Конфигурация для LSP сервера (если он запускается отдельно или имеет свои настройки)
+[lsp_server]
+# path = "target/release/lsp_server_backend.exe" # Путь к исполняемому файлу LSP, если GUI должен его знать
+# args = ["--model-id", "default_gemma"] # Дополнительные аргументы для LSP сервера
+
+# Определения доступных моделей для загрузки (пример)
+# Это может использоваться CLI или GUI для выбора модели.
+# ModelLoader может читать эту секцию для поиска моделей.
+[[models]]
+id = "gemma-7b-local" # Уникальный идентификатор модели
+name = "Gemma 7B (Local)" # Отображаемое имя
+path = "gemma-7b-it" # Относительно default_models_dir
+config_file = "config.json" # Имя файла конфигурации внутри директории модели
+# tokenizer_file = "tokenizer.json" # Имя файла токенизатора
+architecture = "Gemma" # Тип архитектуры (для model_loader/core_burn)
+# Другие параметры, специфичные для загрузки этой модели
+# مثلا:
+# default_dtype = "f16"
+# max_seq_len_override = 4096
+
+# [[models]]
+# id = "другая-модель"
+# ...
+
+# Настройки для GUI приложения по умолчанию (могут быть переопределены пользовательскими настройками GUI)
+[gui_app_defaults]
+theme = "Dark" # "Light" или "Dark"
+font_size = 14.0
+# default_lsp_server_path = "..." # Если не указан в AppSettings
+
+# Настройки для CLI приложения по умолчанию
+[cli_app_defaults]
+# default_model_id_for_cli = "gemma-7b-local"
+```

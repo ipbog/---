@@ -1,0 +1,5 @@
+# rust-toolchain.toml
+[toolchain]
+channel = "stable" # Или "nightly", или конкретная версия "1.78.0"
+# components = [ "rustfmt", "clippy" ] # Опционально, для установки компонентов вместе с тулчейном
+# targets = [ "x86_64-pc-windows-msvc" ] # Если нужна специфичная цель по умолчанию

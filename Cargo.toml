@@ -1,0 +1,97 @@
+# model-hub/Cargo.toml
+[workspace]
+resolver = "2"
+
+members = [
+    "utils_crate",
+    "core_burn", # Порядок изменен для логической последовательности зависимостей
+    "model_loader",
+    "inference_engine",
+    "lsp_server_backend",
+    "gui_app",
+    "cli_app",
+    # "api_server_crate", # Если нужен
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <you@example.com>"] # ЗАМЕНИТЕ
+license = "MIT OR Apache-2.0"
+repository = "local"
+publish = false
+description = "AI Code Assistant for local Windows 11 environment."
+keywords = ["ai", "llm", "code-assistant", "rust", "burn", "lsp"]
+categories = ["development-tools", "text-editors"]
+rust-version = "1.78" # Укажите вашу актуальную версию Rust
+
+[workspace.dependencies]
+# Burn (строго версия 0.17.0)
+burn = { version = "0.17.0", default-features = false }
+burn-ndarray = { version = "0.17.0", optional = true }
+burn-tch = { version = "0.17.0", optional = true }
+burn-wgpu = { version = "0.17.0", optional = true }
+burn-autodiff = { version = "0.17.0", optional = true }
+
+# Logging (ваши версии)
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter", "fmt"] }
+
+# Serialization / Deserialization (ваши версии)
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.114" # Ваша версия
+
+# Error Handling (ПРОВЕРЬТЕ ВЕРСИЮ THISERROR)
+thiserror = "1.0.59" # Актуальная с crates.io, ваша была "2.0.12"
+
+# Async (ваши версии)
+tokio = { version = "1.45.0", features = ["rt-multi-thread", "macros", "sync", "io-util", "fs"] } # Ваша была 1.45, уточнил до 1.45.0, добавил fs
+async-channel = "2.3.1"
+
+# LSP (ваши версии)
+lsp-types = { version = "0.97.0", features = ["proposed"] }
+
+# Files and Paths (ваши версии)
+memmap2 = "0.9.4" # Ваша была 0.95, ближайшая существующая - 0.9.4
+path-absolutize = "3.1.1"
+url = { version = "2.5.2", features = ["serde"] } # Ваша была 2.5.4
+
+# GUI (для gui_app - ваши версии)
+eframe = { version = "0.31.1", optional = true } # Убедитесь, что эти версии существуют
+egui = { version = "0.31.1", optional = true }
+egui_extras = { version = "0.31.1", features = ["syntax_highlighting"], optional = true }
+rfd = { version = "0.15.3", optional = true }
+
+# CLI (для cli_app - ваши версии)
+clap = { version = "4.5.11", features = ["derive", "wrap_help"], optional = true } # Ваша была 4.5.38
+
+# Другие утилиты (ваши версии, где возможно)
+safetensors = "0.4.5" # Ваша была 0.5.3
+chrono = { version = "0.4.41", features = ["serde"], optional = true }
+bytemuck = { version = "1.23.0", optional = true } # Ваша была 1.23.0, crates.io - 1.16.0
+half = "2.6.0" # Ваша была 2.6, crates.io - 2.4.0
+rand = "0.9.1" # Ваша версия
+rand_chacha = "0.9.0" # Ваша версия
+uuid = { version = "1.8.0", features = ["v4"], optional = true } # Для gui_app/state.rs
+
+# Web (для api_server_crate - ПРОВЕРЬТЕ ВЕРСИЮ AXUM)
+axum = { version = "0.7.5", optional = true } # Актуальная с crates.io, ваша была "0.8.4"
+
+# Для тестов
+tempfile = "3.10.1" # Ваша была 3.20.0, такой нет, актуальная 3.10.1
+serial_test = "3.2.0"
+
+[profile.release]
+lto = true
+opt-level = 3 # Для производительности, как в mistral.rs
+panic = "abort"
+strip = "symbols"
+
+[profile.dev]
+# Оставляем opt-level = 0 для быстрых сборок (дефолт)
+# opt-level = 3 # Раскомментируйте для отладки производительности, но сборки будут долгими
+
+[profile.release-with-debug]
+inherits = "release"
+debug = true
+```

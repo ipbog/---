@@ -1,0 +1,47 @@
+# api_server_crate/Cargo.toml
+[package]
+name = "api_server_crate"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+publish = false
+
+[dependencies]
+# HTTP сервер
+axum = { workspace = true, features = ["macros"] }
+tokio = { workspace = true, features = ["full"] } # "full" включает все необходимые фичи для async main
+
+# Для работы с JSON
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+
+# Для логирования и трассировки
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+
+# Основной движок инференса
+inference_engine = { path = "../inference_engine", features = ["async_support"] }
+
+# Burn dependencies (должны быть согласованы с inference_engine)
+burn = { workspace = true, default-features = false }
+burn-ndarray = { workspace = true, optional = true }
+burn-tch = { workspace = true, optional = true }
+burn-wgpu = { workspace = true, optional = true }
+
+# Для управления состоянием сервера (передача InferenceRunner)
+# tokio-util = { workspace = true, features = ["codec"] } # Для BoxFuture, если нужно
+# Примечание: tokio-util не был в workspace.dependencies, но если он нужен, его следует добавить туда
+# или указать версию напрямую. Для данного примера он не используется явно в main.rs, поэтому закомментирован.
+
+[features]
+# Должны быть согласованы с inference_engine
+default = ["ndarray_backend"]
+
+ndarray_backend = ["inference_engine/ndarray_backend", "burn-ndarray"]
+tch_backend = ["inference_engine/tch_backend", "burn-tch"]
+wgpu_backend = ["inference_engine/wgpu_backend", "burn-wgpu"]
+
+# Фича для поддержки f16/bf16
+with_f16_bf16_support_api = ["inference_engine/with_f16_bf16_support_inference"]

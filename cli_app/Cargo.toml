@@ -1,0 +1,45 @@
+# cli_app/Cargo.toml
+[package]
+name = "cli_app"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+publish = false # Этот крейт не предназначен для публикации отдельно на crates.io
+
+[dependencies]
+# Основной движок инференса, который мы будем использовать
+inference_engine = { path = "../inference_engine", features = ["async_support"] } # Включаем асинхронную поддержку
+
+# Утилиты для аргументов командной строки
+clap = { workspace = true, features = ["derive"] }
+
+# Асинхронный рантайм
+tokio = { workspace = true, features = ["full"] } # "full" включает все необходимые фичи для async main
+
+# Логирование и трассировка
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] } # Для настройки логирования
+
+# Burn dependencies (должны быть согласованы с inference_engine)
+burn = { workspace = true, default-features = false }
+burn-ndarray = { workspace = true, optional = true }
+burn-tch = { workspace = true, optional = true }
+burn-wgpu = { workspace = true, optional = true }
+
+# Для работы с путями
+tempfile = { workspace = true } # В dev-dependencies обычно, но здесь может пригодиться для временных файлов
+serde_json = { workspace = true } # Для сериализации/десериализации конфигов, если нужно
+
+[features]
+# Должны быть согласованы с inference_engine
+default = ["ndarray_backend"]
+
+ndarray_backend = ["inference_engine/ndarray_backend", "burn-ndarray"]
+tch_backend = ["inference_engine/tch_backend", "burn-tch"]
+wgpu_backend = ["inference_engine/wgpu_backend", "burn-wgpu"]
+
+# Фича для поддержки f16/bf16
+with_f16_bf16_support_cli = ["inference_engine/with_f16_bf16_support_inference"]
+```
