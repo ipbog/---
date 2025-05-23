@@ -1,0 +1,12 @@
+# utils_crate/Cargo.toml
+[package]
+name = "utils_crate"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+publish = false
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }

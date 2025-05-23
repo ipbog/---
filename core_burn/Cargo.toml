@@ -1,0 +1,28 @@
+# core_burn/Cargo.toml
+[package]
+name = "core_burn"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+publish = false
+
+[dependencies]
+burn = { workspace = true, default-features = false } # Core Burn dependency
+# Optional backend dependencies, to be enabled by features
+burn-ndarray = { workspace = true, optional = true }
+burn-tch = { workspace = true, optional = true }
+burn-wgpu = { workspace = true, optional = true }
+
+serde = { workspace = true, features = ["derive"], optional = true } # For model configs
+
+[features]
+default = ["ndarray_backend"] # Default backend
+
+ndarray_backend = ["burn/ndarray", "dep:burn-ndarray"]
+tch_backend = ["burn/tch", "dep:burn-tch"]
+wgpu_backend = ["burn/wgpu", "dep:burn-wgpu"]
+
+# Feature for f16/bf16 support, if model definitions need it
+with_f16_bf16_support_core = ["burn/with-f16", "burn/with-bf16"]
