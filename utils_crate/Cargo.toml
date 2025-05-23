@@ -1,0 +1,64 @@
+[package]
+name = "utils_crate"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+publish = { workspace = true }
+
+[dependencies]
+# Основные зависимости
+thiserror = { workspace = true } # Для определения ошибок
+tracing = { workspace = true }   # Для логирования
+
+# Зависимости для сериализации/десериализации, активируются фичами
+serde = { workspace = true, features = ["derive"], optional = true }
+serde_json = { workspace = true, optional = true } # Для GenerationConstraint::JsonSchema и MessageContent
+
+# Зависимости для модулей, активируются фичами
+either = { workspace = true, optional = true }     # Для MessageContent
+indexmap = { workspace = true, features = ["serde"], optional = true } # Для MessageContent
+tokio = { workspace = true, features = ["sync"], optional = true } # Для mpsc::Sender в InferenceTask
+
+# Специфичные зависимости для утилитарных модулей
+# Добавлены для logger.rs
+tracing-appender = { version = "0.2", optional = true } # Для ротации логов
+
+# Добавлены для config.rs
+toml = { version = "0.8.22", optional = true } # ИЗМЕНЕНО: Для загрузки TOML конфигов
+
+[features]
+default = [
+    "path_utils_feature",
+    "logger_utils_feature",
+    "app_config_serde",
+    "inference_types_serde",
+    "with_tokio_sender"
+]
+
+# Фича для утилит работы с путями
+path_utils_feature = []
+
+# Фича для утилит логирования
+logger_utils_feature = ["dep:tracing-appender"]
+
+# Фича для конфигурации приложения (использует serde и toml)
+app_config_serde = ["dep:serde", "dep:toml"]
+
+# Фича для сериализации/десериализации типов инференса (SamplingParams, InferenceTask)
+# Включает serde_json, either, indexmap
+inference_types_serde = [
+    "dep:serde",
+    "dep:serde_json",
+    "dep:either",
+    "dep:indexmap",
+]
+
+# Фича для включения tokio::sync::mpsc::Sender в InferenceTask
+with_tokio_sender = ["dep:tokio"]
+
+# Если в будущем потребуется llguidance, его можно добавить так:
+# with_llguidance = ["dep:llguidance", "dep:llguidance-tokenizer"]
+# llguidance = { version = "0.1.1", optional = true }
+# llguidance-tokenizer = { version = "0.1.1", optional = true }
