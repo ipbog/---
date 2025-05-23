@@ -1,0 +1,76 @@
+# core_burn/Cargo.toml
+[package]
+name = "core_burn"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+publish = false # Внутренние крейты обычно не публикуются на crates.io
+
+[dependencies]
+# --- Основная библиотека Burn для глубокого обучения ---
+# default-features = false: отключаем фичи по умолчанию, чтобы явно указать нужные.
+# features:
+#   "std": Поддержка стандартной библиотеки Rust.
+#   "module": Для определения модулей модели (например, слоев, всей модели).
+#   "tensor": Основные операции с тензорами.
+#   "record": Для сериализации и десериализации весов модели.
+#   "nn": Компоненты нейронных сетей (линейные слои, нормализация, активации и т.д.).
+#   "autodiff": Для автоматического дифференцирования (необходимо для обучения).
+burn = { workspace = true, default-features = false, features = ["std", "module", "tensor", "record", "nn", "autodiff"] }
+
+# --- Сериализация / Десериализация ---
+serde = { workspace = true }
+# serde_json опционален, так как может быть нужен только для специфичных задач (например, тесты или отладка конфигураций).
+serde_json = { workspace = true, optional = true }
+
+# --- Обработка ошибок ---
+# thiserror: для удобного создания кастомных типов ошибок.
+thiserror = { workspace = true }
+
+# --- Логирование и трассировка ---
+# tracing: для структурированного логирования.
+tracing = { workspace = true }
+
+# --- Внутренние зависимости проекта ---
+# utils_crate: вспомогательный крейт с общими утилитами и типами.
+# Опционален, если BurnCoreError не конвертируется в UtilsError напрямую.
+# Если есть прямая конвертация, то для UtilsError может быть необходима фича "serde".
+utils_crate = { path = "../utils_crate", optional = true, features = ["serde"] } # Предполагаем, что utils_crate::Error реализует serde
+
+# --- Опциональные бэкенды для Burn ---
+# Активируются через фичи этого крейта для компиляции с конкретным бэкендом.
+burn-ndarray = { workspace = true, optional = true } # Бэкенд на основе NdArray (CPU)
+burn-tch = { workspace = true, optional = true }     # Бэкенд на основе LibTorch (CPU/GPU)
+burn-wgpu = { workspace = true, optional = true }    # Бэкенд на основе WGPU (кроссплатформенный GPU)
+
+# --- Вспомогательные типы данных ---
+# half: для работы с типами данных f16/bf16 (половинная точность),
+# если Burn или его бэкенды их не предоставляют напрямую или требуют явного включения.
+half = { workspace = true, optional = true }
+
+[dev-dependencies]
+# --- Зависимости для тестов ---
+# tempfile: для создания временных файлов и директорий в тестах.
+tempfile = { workspace = true }
+# tokio: асинхронный рантайм, если тесты используют async/await (например, для FileRecorder или асинхронных тестов Burn).
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+# approx: для сравнения чисел с плавающей точкой в тестах с заданной точностью.
+approx = { workspace = true }
+
+[features]
+default = [] # Явно отключаем фичи по умолчанию; пользователь должен выбрать бэкенд.
+
+# --- Фичи для активации различных бэкендов Burn ---
+# Каждая фича включает соответствующий крейт бэкенда и активирует нужные фичи в самом 'burn'.
+ndarray_backend = ["dep:burn-ndarray", "burn/ndarray"]
+tch_backend = ["dep:burn-tch", "burn/tch"]
+# wgpu_backend также включает 'dep:half', так как WGPU часто работает с f16/bf16.
+wgpu_backend = ["dep:burn-wgpu", "dep:half", "burn/wgpu"]
+
+# --- Опциональные фичи крейта ---
+# serde_json_feature: для активации `serde_json`, если он не нужен всегда.
+serde_json_feature = ["dep:serde_json"]
+# with_utils_crate: если `utils_crate` нужен для интеграции ошибок или других утилит.
+with_utils_crate = ["dep:utils_crate"]
