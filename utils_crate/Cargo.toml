@@ -1,0 +1,78 @@
+# utils_crate/Cargo.toml
+[package]
+name = "utils_crate"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+publish = { workspace = true } # Обычно false для внутренних крейтов, если не публикуется отдельно
+description = "Общие утилиты, типы ошибок и разделяемые структуры данных для проекта AI Code Assistant."
+
+# ОБЩИЕ ЗАВИСИМОСТИ КРЕЙТА
+[dependencies]
+# Используется для удобного создания кастомных типов ошибок.
+thiserror = { workspace = true }
+# Мощная и гибкая библиотека для логирования и трассировки.
+tracing = { workspace = true }
+
+# ЗАВИСИМОСТИ ДЛЯ СЕРИАЛИЗАЦИИ/ДЕСЕРИАЛИЗАЦИИ
+# Активируются соответствующими фичами.
+serde = { workspace = true, features = ["derive"], optional = true }
+serde_json = { workspace = true, optional = true } # Для GenerationConstraint::JsonSchema и MessageContent
+
+# ЗАВИСИМОСТИ ДЛЯ КОНКРЕТНЫХ МОДУЛЕЙ
+# Активируются фичами, связанными с этими модулями.
+either = { workspace = true, optional = true }     # Для MessageContent
+indexmap = { workspace = true, features = ["serde"], optional = true } # Для MessageContent
+tokio = { workspace = true, features = ["sync"], optional = true } # Для mpsc::Sender в InferenceTask
+
+# СПЕЦИФИЧНЫЕ ЗАВИСИМОСТИ ДЛЯ УТИЛИТАРНЫХ МОДУЛЕЙ
+
+# Добавлено для logger.rs:
+tracing-appender = { version = "0.2.3", optional = true }
+
+# Добавлено для config.rs:
+toml = { version = "0.8.22", optional = true }
+
+# llguidance (если будет использоваться в будущем)
+# llguidance = { version = "0.7.24", optional = true }
+# path-absolutize (если будет использоваться в будущем для path.rs)
+# path-absolutize = { workspace = true, optional = true }
+
+
+# ОПРЕДЕЛЕНИЕ ФИЧ (FEATURES)
+[features]
+default = [
+    "path_utils_feature",    # Утилиты для работы с путями файловой системы (модуль path.rs).
+    "logger_utils_feature",  # Утилиты для инициализации логирования.
+    "app_config_serde",      # Функциональность загрузки конфигурации приложения.
+    "inference_types_serde", # Сериализация/десериализация типов, связанных с инференсом.
+    "with_tokio_sender"      # Включение tokio::sync::mpsc::Sender в InferenceTask.
+]
+
+# Фича для утилит работы с путями (модуль path.rs).
+# В текущей реализации path.rs не имеет специфичных зависимостей под этой фичей.
+path_utils_feature = []
+
+# Фича для утилит логирования.
+# Включает зависимость tracing-appender для ротации логов.
+logger_utils_feature = ["dep:tracing-appender"]
+
+# Фича для конфигурации приложения.
+# Включает serde для десериализации и toml для парсинга TOML-файлов.
+app_config_serde = ["dep:serde", "dep:toml"]
+
+# Фича для сериализации/десериализации типов инференса.
+inference_types_serde = [
+    "dep:serde",
+    "dep:serde_json",
+    "dep:either",
+    "dep:indexmap",
+]
+
+# Фича для включения tokio::sync::mpsc::Sender в InferenceTask.
+with_tokio_sender = ["dep:tokio"]
+
+# Пример фичи для llguidance, если понадобится:
+# with_llguidance = ["dep:llguidance", "inference_types_serde"]
