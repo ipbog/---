@@ -7,7 +7,7 @@ use burn::{
     module::Module, // Для #[derive(Module)], если KVCache будет частью модели Burn.
     tensor::{backend::Backend, Dim, Shape, Tensor}, // Основные типы тензоров.
 };
-use std::sync::{Arc, Mutex, MutexGuard}; // Для потокобезопасного разделяемого состояния.
+use std::sync::{Arc, Mutex}; // Для потокобезопасного разделяемого состояния.
 
 /// Реэкспортируем `MhaCache` из Burn, так как он используется для хранения ключей и значений.
 /// `MhaCache` - это простая структура, содержащая `key: Tensor<B, 4>` и `value: Tensor<B, 4>`.
@@ -128,22 +128,48 @@ impl<B: Backend> KVCache<B> {
         // (кроме размерности sequence_length, которая будет изменяться).
         let current_key_dims = cache_guard.key.dims();
         let new_key_dims = new_key_states.dims();
+        let new_value_dims = new_value_states.dims();
 
         // Сравниваем batch_size, num_heads, head_dim.
+        // Также убедимся, что новые K и V имеют одинаковую длину новой последовательности (new_seq_len).
         if current_key_dims[0] != new_key_dims[0] // batch_size
             || current_key_dims[1] != new_key_dims[1] // num_heads
-            // current_key_dims[2] - это seq_len, он меняется
+            // current_key_dims[2] - это старая seq_len, она меняется
             || current_key_dims[3] != new_key_dims[3] // head_dim
-            // Аналогичные проверки для new_value_states, если они могут отличаться от new_key_states.
-            || new_key_dims[0] != new_value_states.dims()[0]
-            || new_key_dims[1] != new_value_states.dims()[1]
-            || new_key_dims[3] != new_value_states.dims()[3]
+            // Аналогичные проверки для new_value_states.
+            || current_key_dims[0] != new_value_dims[0] // batch_size for value
+            || current_key_dims[1] != new_value_dims[1] // num_heads for value
+            || current_key_dims[3] != new_value_dims[3] // head_dim for value
+            // Проверяем, что новые K и V имеют одинаковую новую длину последовательности.
+            || new_key_dims[2] != new_value_dims[2]
         {
+            // Формируем более детальное сообщение об ошибке для IncompatibleShape.
+            let expected_dims_vec = vec![current_key_dims[0], current_key_dims[1], 0, current_key_dims[3]]; // 0 как плейсхолдер для seq_len
+            
+            // Определяем, какие актуальные размерности привели к ошибке (ключа или значения)
+            // Это упрощенное представление, можно сделать его более точным, сравнивая каждое поле.
+            let actual_dims_vec = if current_key_dims[0] != new_key_dims[0] || 
+                                     current_key_dims[1] != new_key_dims[1] || 
+                                     current_key_dims[3] != new_key_dims[3] {
+                new_key_dims.into()
+            } else if current_key_dims[0] != new_value_dims[0] || 
+                      current_key_dims[1] != new_value_dims[1] || 
+                      current_key_dims[3] != new_value_dims[3] {
+                new_value_dims.into()
+            } else {
+                 // Если ошибка в new_seq_len для K vs V
+                // Преобразуем строку в Vec<usize> для соответствия типу поля.
+                // Это не идеальное представление, но служит для примера.
+                let shape_info_str = format!("K_new_shape: {:?}, V_new_shape: {:?}", new_key_dims, new_value_dims);
+                shape_info_str.chars().map(|c| c as usize).collect()
+            };
+
             return Err(KVCacheError::IncompatibleShape {
-                expected_dims: vec![current_key_dims[0], current_key_dims[1], usize::MAX, current_key_dims[3]], // usize::MAX как плейсхолдер для seq_len
-                actual_dims: new_key_dims.into(),
+                expected_dims: expected_dims_vec, 
+                actual_dims: actual_dims_vec,
             });
         }
+
 
         // Конкатенируем новые ключи и значения к существующим.
         // Ось 2 соответствует размерности sequence_length.
@@ -206,6 +232,7 @@ impl<B: Backend> KVCache<B> {
 
         // Получаем размерности из существующего (возможно, непустого) ключа,
         // чтобы создать новый пустой тензор с правильными batch_size, num_heads, head_dim.
+        // Если кэш пуст (seq_len=0), то dims() вернет [B, H, 0, D_h].
         let dims = cache_guard.key.dims();
         let batch_size = dims[0];
         let num_heads = dims[1];
