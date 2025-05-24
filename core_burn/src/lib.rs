@@ -65,7 +65,8 @@ pub use architectures::gemma::{
     GemmaFeedForwardConfig,
     // Record-структуры для сериализации/десериализации весов
     GemmaModelRecord,
-    GemmaDecoderBlockRecord, // Убедимся, что все нужные Record реэкспортированы
-    // GemmaAttentionRecord и GemmaFeedForwardRecord обычно используются внутри GemmaDecoderBlockRecord
+    GemmaDecoderBlockRecord,
+    GemmaAttentionRecord, // Реэкспортируем все рекорды для полноты API
+    GemmaFeedForwardRecord,
 };
 pub use architectures::ModelInfo; // Общая информация о модели (тип, размеры и т.д.)
