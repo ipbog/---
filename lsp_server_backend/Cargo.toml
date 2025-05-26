@@ -1,0 +1,76 @@
+# lsp_server_backend/Cargo.toml
+[package]
+name = "lsp_server_backend"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+# publish = { workspace = true } # From user's file. Setting to false as it's a backend binary/server.
+publish = false
+description = "LSP Server backend for the AI Code Assistant, powered by Burn."
+rust-version = { workspace = true } # Added for consistency
+
+[dependencies]
+# --- Локальные зависимости ---
+core_burn = { path = "../core_burn", default-features = false }
+inference_engine = { path = "../inference_engine", default-features = false }
+utils_crate = { path = "../utils_crate", features = [ # Ensuring features from user's version are present
+    "task_definitions_serde", "uuid_feature", "tokio_sender_feature",
+    "lsp_type_integration", "logger_utils_feature", "config_toml", # config_toml from user's version
+    "path_utils_feature"
+] }
+
+# --- Зависимости, версии которых наследуются из workspace ---
+lsp-types = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true } # Kept as per user's file, though utils_crate might provide it
+# `burn` наследует фичи из workspace (включая "autodiff").
+burn = { workspace = true }
+anyhow = { workspace = true }
+dashmap = { workspace = true }
+lsp-server = { workspace = true }
+clap = { workspace = true, optional = true } # Для CLI аргументов LSP сервера.
+config = { workspace = true, optional = true } # Для конфигурации LSP сервера.
+
+# --- Опциональные бэкенды Burn (версии указываются здесь) ---
+burn-ndarray = { version = "0.17.0", optional = true, default-features = false } # Added default-features = false
+burn-tch = { version = "0.17.0", optional = true, default-features = false } # Added default-features = false
+burn-wgpu = { version = "0.17.0", optional = true, default-features = false } # Added default-features = false
+burn-autodiff = { version = "0.17.0", optional = true } # Для `Autodiff<ConcreteBackend>`.
+
+[features]
+default = ["ndarray_backend_lsp"] # CPU бэкенд часто хороший дефолт для LSP серверов.
+
+# Фичи бэкендов пробрасывают выбор в `core_burn` и `inference_engine`,
+# а также активируют `dep:burn-autodiff` для использования `Autodiff<ConcreteBackend>`.
+# Также пробрасывают фичу поддержки autodiff в `core_burn` и `inference_engine`.
+# Also enables standard_sampling from inference_engine.
+ndarray_backend_lsp = [
+    "dep:burn-ndarray", "dep:burn-autodiff",
+    "core_burn/ndarray_backend", "core_burn/autodiff_backend_support",
+    "inference_engine/ndarray_backend", "inference_engine/autodiff_support", "inference_engine/standard_sampling"
+]
+tch_backend_lsp = [
+    "dep:burn-tch", "dep:burn-autodiff",
+    "core_burn/tch_backend", "core_burn/autodiff_backend_support",
+    "inference_engine/tch_backend", "inference_engine/autodiff_support", "inference_engine/standard_sampling"
+]
+wgpu_backend_lsp = [
+    "dep:burn-wgpu", "dep:burn-autodiff",
+    "core_burn/wgpu_backend", "core_burn/autodiff_backend_support",
+    "inference_engine/wgpu_backend", "inference_engine/autodiff_support", "inference_engine/standard_sampling"
+]
+
+# Фича для загрузки конфигурации LspServerConfig.
+# The feature utils_crate/config_toml was in user's file, which implies utils_crate's config_toml feature is used.
+# If this server has ITS OWN config file loaded by the `config` crate directly, then dep:config is needed.
+# Assuming utils_crate is the provider for config loading logic via its "config_toml" feature.
+config_load = ["dep:config", "utils_crate/config_toml"] # Kept as per user's file
+# Фича для активации CLI аргументов.
+cli_args = ["dep:clap"]
+```
