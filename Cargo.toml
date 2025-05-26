@@ -1,0 +1,66 @@
+[workspace]
+resolver = "2"
+members = [
+    "utils_crate",
+    "core_burn",
+    "model_loader",
+    "inference_engine",
+    "training_engine",
+    "cli_app",
+    "gui_app",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <you@example.com>"] # Placeholder, to be updated by user
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/your_username/your_project_name" # Placeholder
+publish = false
+rust-version = "1.70"
+
+[workspace.dependencies]
+burn = { version = "0.17.0", default-features = false, features = ["std", "autodiff"] } 
+
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140" # User specified 1.0.140
+toml_edit = "0.22.26" # User specified 0.22.26
+config = { version = "0.15.11", features = ["toml"] } 
+toml = "0.8.22" # User specified 0.8.22
+
+tokio = { version = "1.45.1", features = ["full"] } # User specified 1.45.1
+futures-util = "0.3.31" # User specified 0.3.31
+
+clap = { version = "4.5.38", features = ["derive"] } 
+eframe = "0.31.1" 
+egui = "0.31.1" 
+rfd = "0.15.3" 
+
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] } 
+tracing-appender = "0.2.3" 
+thiserror = "2.0.12" # User specified 2.0.12
+anyhow = "1.0.98"
+
+rand = "0.9.1" # User specified 0.9.1
+rand_chacha = "0.9.0" # User specified 0.9.0
+uuid = { version = "1.17.0", features = ["v4", "serde"] } # User specified 1.17.0
+either = { version = "1.15.0", features = ["serde"] } 
+indexmap = { version = "2.9.0", features = ["serde"] } 
+path-absolutize = { version = "3.1.1", features = ["once_cell_cache"] } 
+memmap2 = "0.9.5"
+bytemuck = { version = "1.23.0", features = ["derive"] } 
+half = { version = "2.6.0", features = ["serde", "bytemuck"] } 
+chrono = "0.4.41" 
+
+safetensors = "0.5.3" 
+tokenizers = { version = "0.21.1" } # User specified "ТОЧНО ТАК, КАК ВЫ ПРЕДОСТАВИЛИ"
+tempfile = "3.20.0" # User specified 3.20.0
+serial_test = "3.2.0" # User specified 3.2.0
+approx = "0.5.1" 
+
+llguidance = "0.7.24" # User specified 0.7.24
+rayon = "1.10.0" # User specified 1.10.0
+dirs-next = "2.0.0"
+num_cpus = "1.16.0" # User specified 1.16.0
+```

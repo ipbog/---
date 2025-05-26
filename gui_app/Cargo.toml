@@ -1,0 +1,43 @@
+# gui_app/Cargo.toml
+[package]
+name = "gui_app"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+publish = false
+description = "GUI приложение для взаимодействия с AI Агентами."
+rust-version = { workspace = true }
+
+[dependencies]
+utils_crate = { path = "../utils_crate", default-features = false, features = [
+    "path_utils_feature", "logger_utils_feature", "config_toml",
+    "agent_task_definitions_serde", "uuid_feature", "tokio_sender_feature"
+] }
+inference_engine = { path = "../inference_engine", default-features = false }
+eframe = { workspace = true }
+egui = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+anyhow = { workspace = true }
+burn = { workspace = true }
+serde = { workspace = true, optional = true }
+rfd = { workspace = true }
+
+burn-ndarray = { version = "0.17.0", default-features = false, features = ["std"], optional = true }
+burn-tch = { version = "0.17.0", default-features = false, features = ["std"], optional = true }
+burn-wgpu = { version = "0.17.0", default-features = false, features = ["std"], optional = true }
+# Note: burn-autodiff is NOT listed as an optional dependency here in user's provided file for gui_app
+
+[[bin]]
+name = "ai_agent_gui" # User specified name
+path = "src/main.rs"
+
+[features]
+default = ["wgpu_backend_gui"]
+
+ndarray_backend_gui = ["dep:burn-ndarray", "inference_engine/ndarray_backend", "inference_engine/rayon_support"] 
+tch_backend_gui = ["dep:burn-tch", "inference_engine/tch_backend", "inference_engine/rayon_support"] 
+wgpu_backend_gui = ["dep:burn-wgpu", "inference_engine/wgpu_backend", "inference_engine/rayon_support"]
+```

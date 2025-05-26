@@ -1,0 +1,62 @@
+# training_engine/Cargo.toml
+[package]
+name = "training_engine"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+publish = false
+description = "Движок для обучения и дообучения AI Агентов."
+
+[dependencies]
+utils_crate = { path = "../utils_crate" }
+model_loader = { path = "../model_loader" }
+core_burn = { path = "../core_burn", default-features = false }
+
+burn = { workspace = true } 
+
+tokio = { workspace = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true }
+
+burn-ndarray = { version = "0.17.0", default-features = false, features = ["std"], optional = true }
+burn-tch = { version = "0.17.0", default-features = false, features = ["std"], optional = true }
+burn-wgpu = { version = "0.17.0", default-features = false, features = ["std"], optional = true }
+burn-autodiff = { version = "0.17.0" } # Note: This is NOT optional in the user's provided file for training_engine
+
+rayon = { workspace = true, optional = true } 
+
+[dev-dependencies]
+# ... (обычные тестовые зависимости)
+# Adding standard dev-dependencies for completeness, as user file had "..."
+tempfile = { workspace = true }
+serial_test = { workspace = true }
+approx = { workspace = true }
+burn-ndarray = { version = "0.17.0", default-features = false, features = ["std"] } 
+
+
+[features]
+default = ["ndarray_backend_train"]
+
+ndarray_backend_train = [
+    "dep:burn-ndarray", 
+    "core_burn/ndarray_backend",
+    "core_burn/autodiff_support", # This implies core_burn's autodiff_support enables dep:burn-autodiff (the crate)
+    "rayon_support" 
+]
+tch_backend_train = [
+    "dep:burn-tch",
+    "core_burn/tch_backend",
+    "core_burn/autodiff_support",
+    "rayon_support" 
+]
+wgpu_backend_train = [
+    "dep:burn-wgpu",
+    "core_burn/wgpu_backend",
+    "core_burn/autodiff_support",
+    "rayon_support" 
+]
+rayon_support = ["dep:rayon"]
+```
