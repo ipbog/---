@@ -1,0 +1,63 @@
+# cli_app/Cargo.toml
+[package]
+name = "cli_app"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+publish = false
+description = "CLI-интерфейс для model-hub."
+rust-version = { workspace = true }
+
+[dependencies]
+# --- Локальные зависимости ---
+# Включаем только те фичи `utils_crate`, которые реально нужны CLI.
+utils_crate = { path = "../utils_crate", default-features = false, features = [
+    "path_utils_feature", "logger_utils_feature", "config_toml", # config_toml from user's version
+    "task_definitions_serde", "uuid_feature", "tokio_sender_feature"
+] }
+# Управляем бэкендом `inference_engine` через фичи `cli_app`.
+inference_engine = { path = "../inference_engine", default-features = false }
+
+# --- Зависимости, версии которых наследуются из workspace ---
+clap = { workspace = true } # `clap` нужен всегда для CLI.
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+tokio = { workspace = true } # Для асинхронного main и взаимодействия с `inference_engine`.
+anyhow = { workspace = true }
+# `burn` наследует фичи из workspace (включая "autodiff").
+# Это необходимо, если `SelectedBackend` в `main.rs` это `Autodiff<ConcreteBackend>`.
+burn = { workspace = true }
+
+# --- Опциональные бэкенды Burn (версии указываются здесь) ---
+burn-ndarray = { version = "0.17.0", optional = true, default-features = false } # Added default-features = false
+burn-tch = { version = "0.17.0", optional = true, default-features = false } # Added default-features = false
+burn-wgpu = { version = "0.17.0", optional = true, default-features = false } # Added default-features = false
+# `burn-autodiff` (крейт-обертка) нужен, если `SelectedBackend` в `main.rs` это `Autodiff<ConcreteBackend>`.
+burn-autodiff = { version = "0.17.0", optional = true }
+
+[[bin]]
+name = "aicodelabs-cli" # Имя исполняемого файла.
+path = "src/main.rs"
+
+[features]
+default = ["ndarray_backend_cli"] # Бэкенд по умолчанию для CLI.
+
+# Фичи для выбора бэкенда.
+# Активируют `dep:burn-autodiff` (так как `SelectedBackend` это `Autodiff<ConcreteBackend>`).
+# Пробрасывают фичу бэкенда и фичу поддержки autodiff в `inference_engine`.
+# Also enables standard_sampling from inference_engine.
+ndarray_backend_cli = [
+    "dep:burn-ndarray", "dep:burn-autodiff",
+    "inference_engine/ndarray_backend", "inference_engine/autodiff_support", "inference_engine/standard_sampling"
+]
+tch_backend_cli = [
+    "dep:burn-tch", "dep:burn-autodiff",
+    "inference_engine/tch_backend", "inference_engine/autodiff_support", "inference_engine/standard_sampling"
+]
+wgpu_backend_cli = [
+    "dep:burn-wgpu", "dep:burn-autodiff",
+    "inference_engine/wgpu_backend", "inference_engine/autodiff_support", "inference_engine/standard_sampling"
+]
+```

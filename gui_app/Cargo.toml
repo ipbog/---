@@ -1,0 +1,62 @@
+# gui_app/Cargo.toml
+[package]
+name = "gui_app"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+publish = false
+description = "GUI приложение для model-hub."
+rust-version = { workspace = true }
+
+[dependencies]
+# --- Локальные зависимости ---
+utils_crate = { path = "../utils_crate", default-features = false, features = [
+    "path_utils_feature", "logger_utils_feature", "config_toml", # config_toml from user's version
+    "task_definitions_serde", "uuid_feature", "tokio_sender_feature",
+    "lsp_type_integration" # Может быть нужен, если GUI отображает LSP-подобные данные.
+] }
+inference_engine = { path = "../inference_engine", default-features = false }
+
+# --- Зависимости, версии которых наследуются из workspace ---
+eframe = { workspace = true } # Основные GUI зависимости.
+egui = { workspace = true }
+egui_extras = { workspace = true } # Added from workspace.dependencies
+rfd = { workspace = true } # Added from workspace.dependencies
+tokio = { workspace = true }
+tracing = { workspace = true }
+anyhow = { workspace = true }
+# `burn` наследует фичи из workspace (включая "autodiff").
+burn = { workspace = true }
+serde = { workspace = true, optional = true } # Если GUI работает с сериализуемыми данными напрямую.
+
+# --- Опциональные бэкенды Burn (версии указываются здесь) ---
+burn-ndarray = { version = "0.17.0", optional = true, default-features = false } # Added default-features = false
+burn-tch = { version = "0.17.0", optional = true, default-features = false } # Added default-features = false
+burn-wgpu = { version = "0.17.0", optional = true, default-features = false } # Added default-features = false
+burn-autodiff = { version = "0.17.0", optional = true } # Для `Autodiff<ConcreteBackend>`.
+
+[[bin]]
+name = "gui_app" # Binary name was already gui_app in user's version
+path = "src/main.rs"
+
+[features]
+default = ["wgpu_backend_gui"] # `wgpu` часто хороший выбор по умолчанию для GUI.
+
+# Фичи для выбора бэкенда.
+# Предполагается, что GUI также будет использовать `Autodiff<ConcreteBackend>`.
+# Also enables standard_sampling from inference_engine.
+ndarray_backend_gui = [
+    "dep:burn-ndarray", "dep:burn-autodiff",
+    "inference_engine/ndarray_backend", "inference_engine/autodiff_support", "inference_engine/standard_sampling"
+]
+tch_backend_gui = [
+    "dep:burn-tch", "dep:burn-autodiff",
+    "inference_engine/tch_backend", "inference_engine/autodiff_support", "inference_engine/standard_sampling"
+]
+wgpu_backend_gui = [
+    "dep:burn-wgpu", "dep:burn-autodiff",
+    "inference_engine/wgpu_backend", "inference_engine/autodiff_support", "inference_engine/standard_sampling"
+]
+```

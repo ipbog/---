@@ -1,0 +1,64 @@
+# training_engine/Cargo.toml
+[package]
+name = "training_engine"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+publish = false
+description = "Движок для обучения и дообучения моделей (в разработке)."
+rust-version = { workspace = true } # Added for consistency
+
+[dependencies]
+# --- Локальные зависимости ---
+utils_crate = { path = "../utils_crate", features = ["logger_utils_feature", "config_toml_feature"] } # Assuming some basic utils needed
+model_loader = { path = "../model_loader" } # Для загрузки моделей перед дообучением
+core_burn = { path = "../core_burn", default-features = false } # Управляем бэкендом через фичи
+
+# --- Зависимости из workspace ---
+# `training_engine` точно потребует фичи "autodiff", "train", "optim" для `burn`.
+# "autodiff" уже включена в `[workspace.dependencies.burn]`.
+# "train" и "optim" добавляем здесь явно к тем, что наследуются из workspace.
+burn = { workspace = true, features = ["train", "optim"] }
+tokio = { workspace = true }
+tracing = { workspace = true }
+anyhow = { workspace = true } # Added for error handling
+serde = { workspace = true, optional = true } # Optional for configs or state
+# ... другие общие, если нужны ...
+
+# --- Опциональные бэкенды Burn (версии указываются здесь) ---
+burn-ndarray = { version = "0.17.0", optional = true, default-features = false } # Added default-features = false
+burn-tch = { version = "0.17.0", optional = true, default-features = false } # Added default-features = false
+burn-wgpu = { version = "0.17.0", optional = true, default-features = false } # Added default-features = false
+# `burn-autodiff` (крейт-обертка) будет нужен для `Autodiff<ConcreteBackend>`.
+burn-autodiff = { version = "0.17.0", optional = true }
+
+[dev-dependencies] # Added dev-dependencies section
+tempfile = { workspace = true }
+serial_test = { workspace = true }
+burn-ndarray = { version = "0.17.0", default-features = false, features = ["std", "module", "tensor"] }
+
+
+[features]
+default = ["ndarray_backend_train"] # Пример
+
+# Фичи для выбора бэкенда обучения.
+# Каждая такая фича:
+# 1. Включает соответствующий крейт бэкенда (dep:burn-*)
+# 2. Включает крейт-обертку `burn-autodiff` (dep:burn-autodiff)
+# 3. Активирует соответствующую фичу бэкенда в `core_burn` (core_burn/*_backend)
+# 4. Активирует поддержку autodiff в `core_burn` (core_burn/autodiff_backend_support)
+ndarray_backend_train = [
+    "dep:burn-ndarray", "dep:burn-autodiff",
+    "core_burn/ndarray_backend", "core_burn/autodiff_backend_support"
+]
+tch_backend_train = [
+    "dep:burn-tch", "dep:burn-autodiff",
+    "core_burn/tch_backend", "core_burn/autodiff_backend_support"
+]
+wgpu_backend_train = [
+    "dep:burn-wgpu", "dep:burn-autodiff",
+    "core_burn/wgpu_backend", "core_burn/autodiff_backend_support"
+]
+```
